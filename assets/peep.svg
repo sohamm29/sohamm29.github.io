@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="64" height="40" role="img" aria-label="A small hole with eyes peeping out">
+  <!-- ground sliver -->
+  <rect x="0" y="26" width="64" height="14" fill="#c84c0c"/>
+  <rect x="0" y="24" width="64" height="4" fill="#1c0800"/>
+  <!-- the hole -->
+  <ellipse cx="32" cy="26" rx="26" ry="8" fill="#000000"/>
+  <!-- eyes peeping out -->
+  <circle cx="24" cy="22" r="5" fill="#ffffff"/>
+  <circle cx="40" cy="22" r="5" fill="#ffffff"/>
+  <circle cx="25" cy="23" r="2.4" fill="#000000"/>
+  <circle cx="39" cy="23" r="2.4" fill="#000000"/>
+</svg>
