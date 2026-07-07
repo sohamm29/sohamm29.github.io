@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Soham Malhotra · World 1-1 Under Construction</title>
+  <meta name="description" content="Soham Malhotra's corner of the internet — world 1-1, currently under construction. Poke around, there are secrets.">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:title" content="Soham Malhotra · World 1-1">
+  <meta property="og:description" content="Currently being worked on. Hover the hole. Then click it.">
+  <meta property="og:url" content="https://sohamm29.github.io/">
+  <meta property="og:image" content="https://sohamm29.github.io/assets/wip-banner.svg">
+  <link rel="icon" href="assets/peep.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f1e3;
+      --ink: #2b2620;
+      --ink-soft: #7a7264;
+      --accent: #d02020;
+      --panel: #ffffff;
+      --frame: #1c0800;
+      --frame-glow: #ffffff;
+      --btn-bg: #ffffff;
+      --shadow: rgba(0, 0, 0, .18);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #10142a;
+        --ink: #f4efe4;
+        --ink-soft: #9a92b8;
+        --accent: #ff5555;
+        --panel: #1a1f3d;
+        --frame: #000000;
+        --frame-glow: #3a3f66;
+        --btn-bg: #1a1f3d;
+        --shadow: rgba(0, 0, 0, .5);
+      }
+      /* world 1-1, but it's night */
+      #sky { fill: #0e1e50; }
+      #clouds { fill: #8ea3d8; }
+      #stars { opacity: 1; }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Press Start 2P", "Courier New", monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      text-align: center;
+    }
+
+    /* ---- Mario HUD ---- */
+    .hud {
+      display: flex;
+      gap: clamp(12px, 5vw, 48px);
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: clamp(9px, 2.2vw, 12px);
+      letter-spacing: 1px;
+      margin-bottom: clamp(24px, 6vh, 56px);
+      text-transform: uppercase;
+    }
+    .hud span b { display: block; margin-top: 6px; font-weight: normal; }
+    .hud .coin-icon { color: #e39d25; }
+
+    h1 {
+      font-size: clamp(16px, 4.5vw, 28px);
+      margin: 0 0 16px;
+      line-height: 1.5;
+    }
+    .tagline {
+      font-size: clamp(9px, 2.2vw, 12px);
+      color: var(--ink-soft);
+      line-height: 2;
+      margin: 0 0 32px;
+    }
+
+    /* ---- the game screen ---- */
+    .screen {
+      width: min(640px, 100%);
+      border: 6px solid var(--frame);
+      box-shadow: 0 0 0 6px var(--frame-glow), 10px 14px 0 6px var(--shadow);
+      line-height: 0;
+      background: #5c94fc;
+    }
+    .screen svg { width: 100%; height: auto; }
+
+    /* interactive bits inside the SVG */
+    #qblock, #hole, #peep-btn { cursor: pointer; }
+    #qblock, #hole {
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform .1s steps(2);
+      outline: none;
+    }
+    #qblock:focus-visible, #hole:focus-visible { filter: drop-shadow(0 0 4px #fff); }
+    #qblock.bump { transform: translateY(-10px); }
+    #qblock.used { cursor: default; }
+    .pupil { transition: transform .15s linear; }
+
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to   { transform: translateX(26px); }
+    }
+    #clouds { animation: drift 9s ease-in-out infinite alternate; }
+
+    @keyframes coin-pop {
+      0%   { transform: translateY(0);     opacity: 1; }
+      70%  { transform: translateY(-64px); opacity: 1; }
+      100% { transform: translateY(-80px); opacity: 0; }
+    }
+    .coin-fly { animation: coin-pop .5s steps(8) forwards; pointer-events: none; }
+
+    @keyframes oneup-rise {
+      from { transform: translateY(0);    opacity: 1; }
+      to   { transform: translateY(-48px); opacity: 0; }
+    }
+    .oneup { animation: oneup-rise 1.2s steps(10) forwards; pointer-events: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      #clouds { animation: none; }
+      .pupil { transition: none; }
+    }
+
+    /* ---- buttons ---- */
+    .actions {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 44px 0 40px;
+    }
+    .btn {
+      font-family: inherit;
+      font-size: clamp(9px, 2.2vw, 12px);
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--ink);
+      background: var(--btn-bg);
+      border: 4px solid var(--frame);
+      box-shadow: 5px 5px 0 var(--frame);
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: transform .05s steps(1), box-shadow .05s steps(1);
+    }
+    .btn:hover { background: var(--accent); color: #fff; }
+    .btn:active {
+      transform: translate(5px, 5px);
+      box-shadow: 0 0 0 var(--frame);
+    }
+
+    /* ---- the peeping hole ---- */
+    .peep-zone { margin-top: 8px; }
+    .peep-zone svg { width: 88px; height: auto; }
+    .peep-hint {
+      font-size: 8px;
+      color: var(--ink-soft);
+      margin-top: 12px;
+      opacity: 0;
+      transition: opacity .4s;
+    }
+    .peep-zone:hover .peep-hint,
+    .peep-zone:focus-within .peep-hint { opacity: 1; }
+
+    /* ---- hidden world dialog ---- */
+    dialog {
+      font-family: inherit;
+      background: var(--panel);
+      color: var(--ink);
+      border: 6px solid var(--frame);
+      box-shadow: 0 0 0 6px var(--frame-glow), 10px 14px 0 6px var(--shadow);
+      padding: 32px 28px;
+      max-width: min(440px, 88vw);
+      text-align: center;
+    }
+    dialog::backdrop { background: rgba(0, 0, 0, .7); }
+    dialog h2 { font-size: clamp(11px, 3vw, 15px); line-height: 1.8; margin: 0 0 20px; color: var(--accent); }
+    dialog p { font-size: clamp(9px, 2.4vw, 11px); line-height: 2.1; margin: 0 0 28px; }
+
+    footer {
+      margin-top: auto;
+      padding-top: 48px;
+      font-size: 8px;
+      line-height: 2;
+      color: var(--ink-soft);
+    }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+
+  <header class="hud" aria-label="Score board">
+    <span>Soham<b>&times;1</b></span>
+    <span class="coin-icon">&#x1FA99;<b id="coin-count">&times;00</b></span>
+    <span>World<b>1-1</b></span>
+    <span>Time<b>&infin;</b></span>
+  </header>
+
+  <h1>Soham Malhotra</h1>
+  <p class="tagline">this page is world 1-1 &mdash; still under construction.<br>the ? block works, though. so does the hole.</p>
+
+  <div class="screen">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="Mario-style sign: currently being worked on">
+      <!-- classic Mario sky -->
+      <rect id="sky" width="640" height="400" fill="#5c94fc"/>
+
+      <!-- night stars (dark mode only) -->
+      <g id="stars" fill="#f4efe4" opacity="0">
+        <rect x="40" y="90" width="4" height="4"/>
+        <rect x="190" y="30" width="4" height="4"/>
+        <rect x="300" y="46" width="3" height="3"/>
+        <rect x="420" y="24" width="4" height="4"/>
+        <rect x="600" y="100" width="3" height="3"/>
+        <rect x="530" y="20" width="3" height="3"/>
+        <rect x="100" y="180" width="3" height="3"/>
+      </g>
+
+      <!-- pixel clouds -->
+      <g id="clouds" fill="#ffffff">
+        <rect x="60"  y="40" width="72" height="20" rx="10"/>
+        <rect x="76"  y="26" width="40" height="20" rx="10"/>
+        <rect x="480" y="64" width="88" height="20" rx="10"/>
+        <rect x="500" y="50" width="48" height="20" rx="10"/>
+      </g>
+
+      <!-- floating ? block: click it -->
+      <g id="qblock" role="button" tabindex="0" aria-label="Question block — hit it for a coin">
+        <rect id="qblock-body" x="552" y="140" width="48" height="48" fill="#e39d25" stroke="#7a4a00" stroke-width="4"/>
+        <text id="qblock-q" x="576" y="175" font-family="monospace" font-size="30" font-weight="bold" fill="#fff" text-anchor="middle">?</text>
+        <rect x="556" y="144" width="6" height="6" fill="#7a4a00"/>
+        <rect x="590" y="144" width="6" height="6" fill="#7a4a00"/>
+        <rect x="556" y="178" width="6" height="6" fill="#7a4a00"/>
+        <rect x="590" y="178" width="6" height="6" fill="#7a4a00"/>
+      </g>
+
+      <!-- brick pattern -->
+      <defs>
+        <pattern id="bricks" width="64" height="32" patternUnits="userSpaceOnUse">
+          <rect width="64" height="32" fill="#c84c0c"/>
+          <path d="M0 0h64M0 16h64M0 32h64" stroke="#1c0800" stroke-width="3"/>
+          <path d="M16 0v16M48 0v16M32 16v16M0 16v16M64 16v16" stroke="#1c0800" stroke-width="3"/>
+        </pattern>
+      </defs>
+
+      <!-- ground: brick foundation -->
+      <rect x="0" y="336" width="640" height="64" fill="url(#bricks)"/>
+      <rect x="0" y="332" width="640" height="6" fill="#1c0800"/>
+
+      <!-- brick pillar holding the sign up -->
+      <rect x="288" y="240" width="64" height="96" fill="url(#bricks)"/>
+      <rect x="284" y="240" width="4" height="96" fill="#1c0800"/>
+      <rect x="352" y="240" width="4" height="96" fill="#1c0800"/>
+
+      <!-- === the sign === -->
+      <rect x="128" y="72" width="384" height="168" fill="#00000033"/>
+      <rect x="120" y="64" width="384" height="168" fill="#ffffff"/>
+      <rect x="140" y="84" width="344" height="128" fill="#f4efe4"/>
+      <rect x="140" y="84" width="344" height="128" fill="none" stroke="#d8d2c2" stroke-width="2"/>
+
+      <!-- white paint chipping off the frame -->
+      <g fill="#5c94fc" class="chip-sky">
+        <rect x="120" y="64"  width="14" height="10"/>
+        <rect x="220" y="64"  width="18" height="8"/>
+        <rect x="404" y="64"  width="12" height="12"/>
+        <rect x="492" y="96"  width="12" height="16"/>
+        <rect x="496" y="180" width="8"  height="14"/>
+        <rect x="120" y="150" width="10" height="18"/>
+        <rect x="160" y="224" width="20" height="8"/>
+        <rect x="330" y="226" width="14" height="6"/>
+        <rect x="470" y="222" width="16" height="10"/>
+      </g>
+
+      <!-- paint chipping off the center panel -->
+      <g fill="#b9b2a0">
+        <rect x="152" y="94"  width="16" height="10"/>
+        <rect x="164" y="100" width="8"  height="8"/>
+        <rect x="452" y="90"  width="20" height="12"/>
+        <rect x="444" y="98"  width="10" height="8"/>
+        <rect x="150" y="192" width="12" height="12"/>
+        <rect x="460" y="196" width="16" height="10"/>
+        <rect x="300" y="200" width="10" height="8"/>
+      </g>
+      <g stroke="#b9b2a0" stroke-width="2" fill="none">
+        <path d="M168 104 l10 8 l-4 8"/>
+        <path d="M452 102 l-8 8 l6 6"/>
+        <path d="M310 208 l8 -6"/>
+      </g>
+
+      <!-- sign text -->
+      <text x="312" y="132" font-family="'Courier New', monospace" font-size="30" font-weight="bold" fill="#d02020" text-anchor="middle" letter-spacing="2">CURRENTLY BEING</text>
+      <text x="312" y="172" font-family="'Courier New', monospace" font-size="30" font-weight="bold" fill="#d02020" text-anchor="middle" letter-spacing="2">WORKED ON</text>
+      <text x="312" y="198" font-family="'Courier New', monospace" font-size="13" fill="#8a8372" text-anchor="middle">~ world 1-1 under construction ~</text>
+
+      <!-- small hole in the ground, with something peeping out: click it -->
+      <g id="hole" role="button" tabindex="0" aria-label="A hole with eyes peeping out — click to see what's inside">
+        <ellipse cx="480" cy="340" rx="34" ry="10" fill="#000000"/>
+        <rect x="446" y="340" width="68" height="14" fill="#000000"/>
+        <ellipse cx="480" cy="354" rx="34" ry="8" fill="#000000"/>
+        <circle cx="470" cy="336" r="5" fill="#ffffff"/>
+        <circle cx="490" cy="336" r="5" fill="#ffffff"/>
+        <circle class="pupil" cx="471" cy="337" r="2.4" fill="#000000"/>
+        <circle class="pupil" cx="489" cy="337" r="2.4" fill="#000000"/>
+      </g>
+
+      <!-- tiny warp pipe on the left, why not -->
+      <g>
+        <rect x="72" y="288" width="56" height="48" fill="#00a800" stroke="#003800" stroke-width="4"/>
+        <rect x="64" y="272" width="72" height="24" fill="#00a800" stroke="#003800" stroke-width="4"/>
+        <rect x="76" y="276" width="10" height="16" fill="#80f080"/>
+        <rect x="84" y="292" width="8" height="40" fill="#80f080"/>
+      </g>
+
+      <!-- coins + 1-UPs get injected here by script -->
+      <g id="fx"></g>
+    </svg>
+  </div>
+
+  <nav class="actions" aria-label="Links">
+    <a class="btn" href="https://github.com/sohamm29">&#9654; GitHub</a>
+    <a class="btn" href="https://github.com/sohamm29/sohamm29.github.io">&#9654; This page's source</a>
+  </nav>
+
+  <div class="peep-zone">
+    <button id="peep-btn" class="peep-open" style="all:unset; cursor:pointer;" aria-label="Something is peeping out of a hole. Click it.">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" role="img" aria-hidden="true">
+        <rect x="0" y="26" width="64" height="14" fill="#c84c0c"/>
+        <rect x="0" y="24" width="64" height="4" fill="#1c0800"/>
+        <ellipse cx="32" cy="26" rx="26" ry="8" fill="#000000"/>
+        <circle cx="24" cy="22" r="5" fill="#ffffff"/>
+        <circle cx="40" cy="22" r="5" fill="#ffffff"/>
+        <circle class="pupil" cx="25" cy="23" r="2.4" fill="#000000"/>
+        <circle class="pupil" cx="39" cy="23" r="2.4" fill="#000000"/>
+      </svg>
+    </button>
+    <p class="peep-hint">&#128064; ...something is peeping out of the hole. click it.</p>
+  </div>
+
+  <dialog id="warp">
+    <h2>&#127812; oops, hidden world discovered!</h2>
+    <p>we still haven't completed support for it yet...<br>come back later, plumber. &#128679;</p>
+    <form method="dialog"><button class="btn">Exit pipe &#9654;</button></form>
+  </dialog>
+
+  <footer>
+    &copy; 2026 Soham Malhotra &middot; 1 html file &middot; 0 frameworks &middot; a few secrets<br>
+    <a href="https://github.com/sohamm29">github.com/sohamm29</a>
+  </footer>
+
+  <script>
+    const $ = (s, r = document) => r.querySelector(s);
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---- tiny 8-bit sounds (no assets, just WebAudio) ---- */
+    let ac;
+    function blip(notes) {
+      try {
+        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+        const t0 = ac.currentTime;
+        notes.forEach(([freq, at, dur]) => {
+          const osc = ac.createOscillator(), gain = ac.createGain();
+          osc.type = 'square';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.06, t0 + at);
+          gain.gain.exponentialRampToValueAtTime(0.001, t0 + at + dur);
+          osc.connect(gain).connect(ac.destination);
+          osc.start(t0 + at);
+          osc.stop(t0 + at + dur);
+        });
+      } catch (e) { /* silence is golden */ }
+    }
+    const coinSound = () => blip([[987.77, 0, .08], [1318.51, .08, .3]]);
+    const thudSound = () => blip([[110, 0, .1]]);
+    const oneUpSound = () => blip([[329.63, 0, .12], [392, .12, .12], [659.25, .24, .12], [523.25, .36, .12], [587.33, .48, .12], [783.99, .6, .25]]);
+
+    /* ---- ? block: coins, then it runs dry ---- */
+    const qblock = $('#qblock'), fx = $('#fx'), coinCount = $('#coin-count');
+    let coins = 0;
+    const MAX_COINS = 10;
+
+    function hitBlock() {
+      if (coins >= MAX_COINS) { thudSound(); return; }
+      coins++;
+      coinCount.textContent = '×' + String(coins).padStart(2, '0');
+
+      qblock.classList.add('bump');
+      setTimeout(() => qblock.classList.remove('bump'), 120);
+
+      const coin = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      coin.setAttribute('class', 'coin-fly');
+      coin.innerHTML =
+        '<ellipse cx="576" cy="128" rx="10" ry="14" fill="#ffd700" stroke="#7a4a00" stroke-width="3"/>' +
+        '<ellipse cx="576" cy="128" rx="3" ry="8" fill="#e39d25"/>';
+      fx.appendChild(coin);
+      setTimeout(() => coin.remove(), 600);
+
+      if (coins === MAX_COINS) {
+        // block runs dry: classic used-block look + a 1-UP for your trouble
+        $('#qblock-body').setAttribute('fill', '#a05010');
+        $('#qblock-q').textContent = '';
+        qblock.classList.add('used');
+        qblock.setAttribute('aria-label', 'Used block — all out of coins');
+        const oneup = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        oneup.setAttribute('class', 'oneup');
+        oneup.setAttribute('x', '576'); oneup.setAttribute('y', '120');
+        oneup.setAttribute('text-anchor', 'middle');
+        oneup.setAttribute('font-family', 'monospace');
+        oneup.setAttribute('font-size', '20');
+        oneup.setAttribute('font-weight', 'bold');
+        oneup.setAttribute('fill', '#00e800');
+        oneup.textContent = '1-UP';
+        fx.appendChild(oneup);
+        setTimeout(() => oneup.remove(), 1300);
+        oneUpSound();
+      } else {
+        coinSound();
+      }
+    }
+
+    /* ---- the holes open the hidden world ---- */
+    const warp = $('#warp');
+    const openWarp = () => { blip([[196, 0, .12], [155.56, .1, .2]]); warp.showModal(); };
+
+    const press = (el, fn) => {
+      el.addEventListener('click', fn);
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); }
+      });
+    };
+    press(qblock, hitBlock);
+    press($('#hole'), openWarp);
+    $('#peep-btn').addEventListener('click', openWarp);
+
+    /* ---- the eyes follow you ---- */
+    if (!reducedMotion) {
+      const pupils = document.querySelectorAll('.pupil');
+      let raf = null;
+      addEventListener('mousemove', e => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = null;
+          pupils.forEach(p => {
+            const r = p.getBoundingClientRect();
+            const dx = e.clientX - (r.left + r.width / 2);
+            const dy = e.clientY - (r.top + r.height / 2);
+            const d = Math.hypot(dx, dy) || 1;
+            p.style.transform = `translate(${(dx / d) * 2}px, ${(dy / d) * 2}px)`;
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
