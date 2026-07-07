@@ -1,9 +1,3 @@
-# sohamm29.github.io
-
-<div align="center">
-<img src="assets/wip-banner.svg" width="560" alt="A Mario-style sign reading 'CURRENTLY BEING WORKED ON'" />
-</div>
-
 My personal site — one HTML file, zero frameworks, a few secrets. Live at **[sohamm29.github.io](https://sohamm29.github.io)**.
 
 ## Run it locally
