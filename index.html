@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
   <style>
     :root {
       --bg: #f7f1e3;            /* the paint — and the page. same thing. */
@@ -235,6 +236,17 @@
         <rect x="1032" y="420" width="5" height="8"/>
       </g>
     </g>
+
+    <!-- B.L.I.P. — waits under the wall until the blob needs a ride -->
+    <g id="mini-ship" aria-hidden="true">
+      <path d="M-13 -6 a13 12 0 0 1 26 0 z" fill="#7fe3ff" stroke="#1a1a2e" stroke-width="3"/>
+      <ellipse cx="0" cy="0" rx="30" ry="11" fill="#c3c3d8" stroke="#1a1a2e" stroke-width="3"/>
+      <circle cx="-16" cy="1" r="3" fill="#ffe066"/>
+      <circle cx="0" cy="3" r="3" fill="#ffe066"/>
+      <circle cx="16" cy="1" r="3" fill="#ffe066"/>
+      <rect x="-14" y="9" width="6" height="6" fill="#8d8da8"/>
+      <rect x="8" y="9" width="6" height="6" fill="#8d8da8"/>
+    </g>
   </svg>
 
   <div class="page">
@@ -251,6 +263,28 @@
       </div>
     </footer>
   </div>
+
+  <!-- ---- the other side of the hole ---- -->
+  <div id="flight" role="region" aria-label="B.L.I.P. — navigable space. Arrow keys to fly.">
+    <canvas id="flight-canvas"></canvas>
+    <div class="fhud tl"><span class="lit">B.L.I.P.</span><br>BLOB-LAUNCHED INTERSTELLAR PROBE</div>
+    <div class="fhud tr"><span id="fmode">MODE &middot; FLOAT</span><br><span id="fdist">DIST 0000000 KM</span></div>
+    <div class="fhud bl">&larr;&rarr; THROTTLE &middot; &uarr;&darr; STEER &middot; FLY INTO A WORLD TO LAND</div>
+    <button id="fexit" type="button">ESC &middot; BACK TO THE WALL</button>
+    <p id="fmsg" aria-live="polite"></p>
+    <div id="land" role="dialog" aria-modal="true" aria-labelledby="land-title">
+      <h2 id="land-title"></h2>
+      <p id="land-text"></p>
+      <button id="land-btn" type="button"></button>
+    </div>
+    <div id="fpads" aria-hidden="true">
+      <div id="fpad-l" data-key="ArrowLeft">&#9664;</div>
+      <div id="fpad-r" data-key="ArrowRight">&#9654;</div>
+      <div id="fpad-u" data-key="ArrowUp">&#9650;</div>
+      <div id="fpad-d" data-key="ArrowDown">&#9660;</div>
+    </div>
+  </div>
+  <div id="shade" aria-hidden="true"></div>
 
   <dialog id="warp">
     <h2>&#127812; oops, hidden world discovered!</h2>
@@ -313,5 +347,9 @@
       });
     }
   </script>
+  <script src="js/sprites.js"></script>
+  <script src="js/worlds.js"></script>
+  <script src="js/space.js"></script>
+  <script src="js/portal.js"></script>
 </body>
 </html>

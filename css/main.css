@@ -1,0 +1,159 @@
+/* ============================================================
+   main.css — the flight layer: B.L.I.P.'s navigable strip of
+   space, its HUD, and the landing placeholder. The wall itself
+   styles itself (index.html is self-contained).
+   ============================================================ */
+
+body.locked { overflow: hidden; }
+
+/* mid-launch curtain */
+#shade {
+  position: fixed; inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .45s ease;
+  z-index: 30;
+}
+#shade.on { opacity: 1; }
+
+/* the launch saucer hides in the wall until needed */
+#mini-ship {
+  opacity: 0;
+  transform: translate(960px, 830px);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+#blob { transform-box: fill-box; transform-origin: center; }
+
+/* ---------- space ---------- */
+#flight {
+  position: fixed; inset: 0;
+  z-index: 20;
+  background: #07071a;
+  display: none;
+}
+#flight.on { display: block; }
+
+#flight-canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.fhud {
+  position: fixed;
+  z-index: 22;
+  font-size: 8px;
+  letter-spacing: 1px;
+  line-height: 2;
+  color: #8d8da8;
+  text-transform: uppercase;
+  pointer-events: none;
+  text-align: left;
+}
+.fhud .lit { color: #ffe066; }
+.fhud.tl { top: 14px; left: 16px; }
+.fhud.tr { top: 14px; right: 66px; text-align: right; }
+.fhud.bl { bottom: 12px; left: 16px; font-size: 7px; }
+
+#fexit {
+  all: unset;
+  position: fixed;
+  top: 14px; right: 16px;
+  z-index: 23;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 8px;
+  color: #8d8da8;
+  border: 2px solid #8d8da8;
+  padding: 6px 8px;
+  letter-spacing: 1px;
+}
+#fexit:hover, #fexit:focus-visible { color: #ffe066; border-color: #ffe066; }
+
+/* transmissions from the probe */
+#fmsg {
+  position: fixed;
+  left: 50%; top: 18%;
+  transform: translateX(-50%);
+  z-index: 22;
+  max-width: 88vw;
+  font-size: clamp(8px, 2vw, 11px);
+  letter-spacing: 1px;
+  line-height: 2;
+  color: #7fe3ff;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+}
+#fmsg.on { opacity: 1; }
+
+/* ---------- landing placeholder ---------- */
+#land {
+  position: fixed;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) translateY(14px);
+  z-index: 24;
+  width: min(460px, 88vw);
+  background: #12122a;
+  border: 4px solid #04040c;
+  outline: 2px solid #e8e8f0;
+  box-shadow: 10px 12px 0 rgba(0, 0, 0, .6);
+  padding: 26px 24px 22px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s, transform .18s;
+}
+#land.on { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+#land h2 {
+  margin: 0 0 16px;
+  font-size: clamp(10px, 2.6vw, 13px);
+  line-height: 1.9;
+  color: #ff5e5e;
+  font-weight: normal;
+}
+#land p {
+  margin: 0 0 22px;
+  font-size: clamp(8px, 2.2vw, 10px);
+  line-height: 2.2;
+  color: #e8e8f0;
+}
+#land button {
+  all: unset;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #ffe066;
+  border: 3px solid #ffe066;
+  padding: 10px 14px;
+}
+#land button:hover, #land button:focus-visible { background: #ffe066; color: #12122a; }
+
+/* ---------- touch arrows (they are arrow keys too) ---------- */
+#fpads { display: none; }
+@media (pointer: coarse) {
+  #flight.on #fpads { display: block; }
+}
+#fpads div {
+  position: fixed;
+  z-index: 26;
+  width: 52px; height: 52px;
+  border: 3px solid #8d8da8;
+  background: rgba(18, 18, 42, .8);
+  color: #e8e8f0;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+#fpad-l { left: 16px; bottom: 44px; }
+#fpad-r { left: 82px; bottom: 44px; }
+#fpad-u { right: 44px; bottom: 88px; }
+#fpad-d { right: 44px; bottom: 18px; }
