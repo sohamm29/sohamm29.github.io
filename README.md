@@ -13,4 +13,3 @@ Then open <http://localhost:8000>. That's it — no build step, no dependencies;
 | File | What it is |
 |---|---|
 | `index.html` | The wall: beige paint (the page background), exposed bricks, the hole. Self-contained — works with no other file. |
-| `world1-1.html` | The previous version of the site, preserved as a monument |
