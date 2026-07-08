@@ -9,10 +9,11 @@
   <meta property="og:title" content="Soham Malhotra">
   <meta property="og:description" content="A wall. A hole. Click the hole.">
   <meta property="og:url" content="https://sohamm29.github.io/">
-  <link rel="icon" href="assets/peep.svg" type="image/svg+xml">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect width=%2216%22 height=%2216%22 fill=%22%23c84c0c%22/><rect x=%224%22 y=%225%22 width=%228%22 height=%226%22 fill=%22%23000%22/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
   <style>
     :root {
       --bg: #f7f1e3;            /* the paint — and the page. same thing. */
@@ -66,8 +67,7 @@
     }
     #wall #hole, #wall #blob { pointer-events: auto; }
     #hole { cursor: pointer; outline: none; }
-    #hole:focus-visible .eye { filter: drop-shadow(0 0 5px #fff); }
-    .pupil { transition: transform .15s linear; }
+    #hole:focus-visible { filter: drop-shadow(0 0 5px #fff); }
     #blob-eyes { opacity: 0; }
 
     /* ---- text sits on the paint ---- */
@@ -95,6 +95,31 @@
       color: var(--ink-soft);
       line-height: 2.1;
       margin: 0;
+    }
+
+    /* ---- the heat meter: how close is your cursor to the hole ---- */
+    #heat {
+      font-size: clamp(8px, 2.2vw, 12px);
+      line-height: 2.1;
+      margin: 18px 0 0;
+      min-height: 2.1em;
+      color: var(--heat, var(--ink-soft));
+      transition: color .2s steps(4);
+    }
+    #heat.boom {
+      font-size: clamp(18px, 6vw, 34px);
+      color: var(--accent);
+      animation: boomshake .35s steps(2) 3;
+    }
+    @keyframes boomshake {
+      0%   { transform: translate(0, 0); }
+      25%  { transform: translate(-4px, 2px); }
+      50%  { transform: translate(4px, -2px); }
+      75%  { transform: translate(-3px, -2px); }
+      100% { transform: translate(0, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #heat.boom { animation: none; }
     }
     footer {
       font-size: 8px;
@@ -146,48 +171,26 @@
       </pattern>
     </defs>
 
-    <!-- cracks radiating out from the hole -->
+    <!-- short cracks stepping out from the hole: horizontal and vertical only -->
     <g stroke="var(--crack)" stroke-width="3" fill="none">
-      <path d="M422 348 l-66 -22 l-52 -30"/>
-      <path d="M422 424 l-80 30 l-44 8"/>
-      <path d="M452 288 l-48 -54 l-14 -44"/>
-      <path d="M540 262 l-20 -64 l8 -36"/>
-      <path d="M600 262 l-6 -58 l14 -32"/>
-      <path d="M700 282 l36 -58 l40 -28"/>
-      <path d="M854 344 l68 -28 l52 -8"/>
-      <path d="M854 436 l62 34 l28 42"/>
-      <path d="M828 512 l52 58 l12 44"/>
-      <path d="M726 538 l30 62 l-6 38"/>
-      <path d="M640 538 l6 66 l-12 30"/>
-      <path d="M540 518 l-44 62 l-48 26"/>
-      <path d="M452 486 l-62 40"/>
+      <path d="M422 352 h-44 v-20 h-36"/>
+      <path d="M422 430 h-32 v24 h-44"/>
+      <path d="M540 262 v-38 h-26 v-24"/>
+      <path d="M648 262 v-32 h30 v-34"/>
+      <path d="M854 348 h46 v-22 h38"/>
+      <path d="M854 444 h40 v26 h32"/>
+      <path d="M712 538 v36 h26 v28"/>
+      <path d="M572 538 v42 h-30 v22"/>
     </g>
 
-    <!-- small chips: paint gone, brick showing -->
+    <!-- three mini holes: paint gone, brick showing -->
     <g>
-      <rect x="90" y="122" width="66" height="38" fill="var(--paint-edge)"/>
-      <rect x="96" y="128" width="54" height="26" fill="url(#bricks)"/>
-      <rect x="1130" y="90" width="56" height="52" fill="var(--paint-edge)"/>
-      <rect x="1136" y="96" width="44" height="40" fill="url(#bricks)"/>
-      <rect x="162" y="634" width="72" height="34" fill="var(--paint-edge)"/>
-      <rect x="168" y="640" width="60" height="22" fill="url(#bricks)"/>
-      <rect x="1052" y="606" width="64" height="46" fill="var(--paint-edge)"/>
-      <rect x="1058" y="612" width="52" height="34" fill="url(#bricks)"/>
-      <rect x="324" y="174" width="48" height="32" fill="var(--paint-edge)"/>
-      <rect x="330" y="180" width="36" height="20" fill="url(#bricks)"/>
-      <rect x="944" y="204" width="52" height="34" fill="var(--paint-edge)"/>
-      <rect x="950" y="210" width="40" height="22" fill="url(#bricks)"/>
-      <rect x="234" y="414" width="42" height="30" fill="var(--paint-edge)"/>
-      <rect x="240" y="420" width="30" height="18" fill="url(#bricks)"/>
-      <rect x="1004" y="434" width="46" height="32" fill="var(--paint-edge)"/>
-      <rect x="1010" y="440" width="34" height="20" fill="url(#bricks)"/>
-    </g>
-    <!-- lone flecks -->
-    <g fill="#c84c0c">
-      <rect x="540" y="160" width="8" height="8"/>
-      <rect x="760" y="620" width="8" height="8"/>
-      <rect x="410" y="580" width="6" height="6"/>
-      <rect x="880" y="150" width="6" height="6"/>
+      <rect x="150" y="140" width="60" height="36" fill="var(--paint-edge)"/>
+      <rect x="156" y="146" width="48" height="24" fill="url(#bricks)"/>
+      <rect x="1080" y="210" width="52" height="40" fill="var(--paint-edge)"/>
+      <rect x="1086" y="216" width="40" height="28" fill="url(#bricks)"/>
+      <rect x="200" y="620" width="64" height="34" fill="var(--paint-edge)"/>
+      <rect x="206" y="626" width="52" height="22" fill="url(#bricks)"/>
     </g>
 
     <!-- the big exposure: torn paint rim, then brick -->
@@ -207,7 +210,7 @@
     </g>
 
     <!-- the hole, punched through the bricks. click it. -->
-    <g id="hole" role="button" tabindex="0" aria-label="A hole in the brick wall, with eyes peeping out — click to see where it goes">
+    <g id="hole" role="button" tabindex="0" aria-label="A hole in the brick wall — click it and find out">
       <rect x="586" y="362" width="108" height="76" fill="#000000"/>
       <rect x="570" y="378" width="140" height="44" fill="#000000"/>
       <rect x="602" y="350" width="76" height="100" fill="#000000"/>
@@ -220,10 +223,6 @@
         <rect x="596" y="436" width="14" height="10"/>
         <rect x="672" y="440" width="16" height="10"/>
       </g>
-      <circle class="eye" cx="620" cy="394" r="8" fill="#ffffff"/>
-      <circle class="eye" cx="660" cy="394" r="8" fill="#ffffff"/>
-      <circle class="pupil" cx="621" cy="395" r="3.6" fill="#000000"/>
-      <circle class="pupil" cx="659" cy="395" r="3.6" fill="#000000"/>
     </g>
 
     <!-- a blob, camouflaged in the paint. perched on a brick ledge. -->
@@ -235,12 +234,24 @@
         <rect x="1032" y="420" width="5" height="8"/>
       </g>
     </g>
+
+    <!-- B.L.I.P. — waits under the wall until the blob needs a ride -->
+    <g id="mini-ship" aria-hidden="true">
+      <path d="M-13 -6 a13 12 0 0 1 26 0 z" fill="#7fe3ff" stroke="#1a1a2e" stroke-width="3"/>
+      <ellipse cx="0" cy="0" rx="30" ry="11" fill="#c3c3d8" stroke="#1a1a2e" stroke-width="3"/>
+      <circle cx="-16" cy="1" r="3" fill="#ffe066"/>
+      <circle cx="0" cy="3" r="3" fill="#ffe066"/>
+      <circle cx="16" cy="1" r="3" fill="#ffe066"/>
+      <rect x="-14" y="9" width="6" height="6" fill="#8d8da8"/>
+      <rect x="8" y="9" width="6" height="6" fill="#8d8da8"/>
+    </g>
   </svg>
 
   <div class="page">
     <header>
       <h1>SOHAM MALHOTRA</h1>
       <p class="tagline">fresh coat of paint. same old bricks.</p>
+      <p id="heat" aria-live="polite">something on this wall is hot. go find it.</p>
     </header>
 
     <footer>
@@ -251,6 +262,28 @@
       </div>
     </footer>
   </div>
+
+  <!-- ---- the other side of the hole ---- -->
+  <div id="flight" role="region" aria-label="B.L.I.P. — navigable space. Arrow keys to fly.">
+    <canvas id="flight-canvas"></canvas>
+    <div class="fhud tl"><span class="lit">B.L.I.P.</span><br>BLOB-LAUNCHED INTERSTELLAR PROBE</div>
+    <div class="fhud tr"><span id="fmode">MODE &middot; FLOAT</span><br><span id="fdist">DIST 0000000 KM</span></div>
+    <div class="fhud bl">&larr;&rarr; THROTTLE &middot; &uarr;&darr; STEER &middot; FLY INTO A WORLD TO LAND</div>
+    <button id="fexit" type="button">ESC &middot; BACK TO THE WALL</button>
+    <p id="fmsg" aria-live="polite"></p>
+    <div id="land" role="dialog" aria-modal="true" aria-labelledby="land-title">
+      <h2 id="land-title"></h2>
+      <p id="land-text"></p>
+      <button id="land-btn" type="button"></button>
+    </div>
+    <div id="fpads" aria-hidden="true">
+      <div id="fpad-l" data-key="ArrowLeft">&#9664;</div>
+      <div id="fpad-r" data-key="ArrowRight">&#9654;</div>
+      <div id="fpad-u" data-key="ArrowUp">&#9650;</div>
+      <div id="fpad-d" data-key="ArrowDown">&#9660;</div>
+    </div>
+  </div>
+  <div id="shade" aria-hidden="true"></div>
 
   <dialog id="warp">
     <h2>&#127812; oops, hidden world discovered!</h2>
@@ -281,12 +314,21 @@
       } catch (e) { /* silence is golden */ }
     }
 
-    /* the hole: launch if the probe is installed, otherwise the old error */
+    /* the hole: BOOM first, then launch if the probe is installed,
+       otherwise the old error */
     const warp = $('#warp');
+    const heat = $('#heat');
+    let boomed = false;
     function openHole() {
-      if (window.PORTAL && PORTAL.launch) { PORTAL.launch(); return; }
-      blip([[196, 0, .12], [155.56, .1, .2]]);
-      warp.showModal();
+      boomed = true;
+      heat.classList.add('boom');
+      heat.style.removeProperty('--heat');
+      heat.textContent = 'BOOM!';
+      blip([[98, 0, .3], [65.41, .08, .45], [49, .16, .6]]);
+      setTimeout(() => {
+        if (window.PORTAL && PORTAL.launch) { PORTAL.launch(); return; }
+        warp.showModal();
+      }, 650);
     }
     const hole = $('#hole');
     hole.addEventListener('click', openHole);
@@ -294,24 +336,38 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHole(); }
     });
 
-    /* the eyes follow you */
-    if (!reducedMotion) {
-      const pupils = document.querySelectorAll('.pupil');
-      let raf = null;
-      addEventListener('mousemove', e => {
-        if (raf) return;
-        raf = requestAnimationFrame(() => {
-          raf = null;
-          pupils.forEach(p => {
-            const r = p.getBoundingClientRect();
-            const dx = e.clientX - (r.left + r.width / 2);
-            const dy = e.clientY - (r.top + r.height / 2);
-            const d = Math.hypot(dx, dy) || 1;
-            p.style.transform = `translate(${(dx / d) * 2}px, ${(dy / d) * 2}px)`;
-          });
-        });
+    /* hotter or colder: the wall knows where your cursor is */
+    const TIERS = [
+      [0.06, 'SUPA HOT!! CLICK. THE. HOLE.'],
+      [0.14, 'supa hot. it’s right there.'],
+      [0.24, 'hot! ow ow ow.'],
+      [0.38, 'warmer. keep going.'],
+      [0.55, 'lukewarm. like day-old chai.'],
+      [0.75, 'cold. brrr.'],
+      [Infinity, 'ice cold. penguins live here now.'],
+    ];
+    const HEAT_COLORS = ['#ff2200', '#ff5522', '#e07818', '#b98a2e', '#8a8a5a', '#5f8fa8', '#4a7fd0'];
+    let raf = null, lastTier = -1;
+    addEventListener('mousemove', e => {
+      if (raf || boomed) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        if (boomed) return;
+        const r = hole.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        const d = Math.hypot(dx, dy) / (Math.hypot(innerWidth, innerHeight) / 2);
+        const tier = TIERS.findIndex(([max]) => d < max);
+        if (tier === lastTier) return;
+        lastTier = tier;
+        heat.textContent = TIERS[tier][1];
+        heat.style.setProperty('--heat', HEAT_COLORS[tier]);
       });
-    }
+    });
   </script>
+  <script src="js/sprites.js"></script>
+  <script src="js/worlds.js"></script>
+  <script src="js/space.js"></script>
+  <script src="js/portal.js"></script>
 </body>
 </html>
