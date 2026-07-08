@@ -1,4 +1,4 @@
-My personal site — a freshly painted wall with the paint chipping off, old bricks underneath, and a hole in the middle. Click the hole. Zero frameworks, zero image assets: everything is hand-typed SVG and canvas pixels. Live at **[sohamm29.github.io](https://sohamm29.github.io)**.
+My personal site. Live at **[sohamm29.github.io](https://sohamm29.github.io)**.
 
 ## Run it locally
 
