@@ -68,7 +68,10 @@
     #wall #hole, #wall #blob { pointer-events: auto; }
     #hole { cursor: pointer; outline: none; }
     #hole:focus-visible { filter: drop-shadow(0 0 5px #fff); }
-    #blob-eyes { opacity: 0; }
+    #blob path { transition: fill .5s steps(4), stroke .5s steps(4); }
+    #blob.awake path { fill: #62d96b; stroke: #2e7a3c; }
+    #blob-eyes { opacity: 0; transition: opacity .15s steps(2); }
+    #blob.awake #blob-eyes { opacity: 1; }
 
     /* ---- text sits on the paint ---- */
     .page {
@@ -129,7 +132,7 @@
     footer a { color: inherit; }
     footer .links { margin-top: 4px; }
 
-    /* ---- hidden world dialog (the error, kept as-is) ---- */
+    /* ---- the not-built-yet dialog (copy lives in utils/notbuilt.js) ---- */
     dialog {
       font-family: inherit;
       background: var(--panel);
@@ -142,7 +145,7 @@
     }
     dialog::backdrop { background: rgba(0, 0, 0, .7); }
     dialog h2 { font-size: clamp(11px, 3vw, 15px); line-height: 1.8; margin: 0 0 20px; color: var(--accent); }
-    dialog p { font-size: clamp(9px, 2.4vw, 11px); line-height: 2.1; margin: 0 0 28px; }
+    dialog p { font-size: clamp(9px, 2.4vw, 11px); line-height: 2.1; margin: 0 0 28px; white-space: pre-line; }
     .btn {
       font-family: inherit;
       font-size: clamp(9px, 2.2vw, 12px);
@@ -283,6 +286,7 @@
       <div id="fpad-d" data-key="ArrowDown">&#9660;</div>
     </div>
   </div>
+  <canvas id="tunnel" aria-hidden="true"></canvas>
   <div id="shade" aria-hidden="true"></div>
 
   <dialog id="warp">
@@ -291,45 +295,34 @@
     <form method="dialog"><button class="btn">Exit pipe &#9654;</button></form>
   </dialog>
 
+  <script src="utils/dom.js"></script>
+  <script src="utils/sound.js"></script>
   <script>
-    const $ = (s, r = document) => r.querySelector(s);
-    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    /* tiny 8-bit sounds (no assets, just WebAudio) */
-    let ac;
-    function blip(notes) {
-      try {
-        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-        const t0 = ac.currentTime;
-        notes.forEach(([freq, at, dur]) => {
-          const osc = ac.createOscillator(), gain = ac.createGain();
-          osc.type = 'square';
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.06, t0 + at);
-          gain.gain.exponentialRampToValueAtTime(0.001, t0 + at + dur);
-          osc.connect(gain).connect(ac.destination);
-          osc.start(t0 + at);
-          osc.stop(t0 + at + dur);
-        });
-      } catch (e) { /* silence is golden */ }
-    }
-
-    /* the hole: BOOM first, then launch if the probe is installed,
-       otherwise the old error */
+    /* the hole: BOOM first, then the blob's launch sequence if the
+       portal is installed, otherwise straight to the not-built error */
     const warp = $('#warp');
     const heat = $('#heat');
     let boomed = false;
     function openHole() {
+      if (boomed) return;
       boomed = true;
       heat.classList.add('boom');
       heat.style.removeProperty('--heat');
       heat.textContent = 'BOOM!';
-      blip([[98, 0, .3], [65.41, .08, .45], [49, .16, .6]]);
+      SFX.play('boom');
       setTimeout(() => {
         if (window.PORTAL && PORTAL.launch) { PORTAL.launch(); return; }
-        warp.showModal();
+        NOTBUILT.show('pipe');
       }, 650);
     }
+    /* the dialog closed: put the wall back the way it was */
+    warp.addEventListener('close', () => {
+      boomed = false;
+      lastTier = -1;
+      heat.classList.remove('boom');
+      heat.style.removeProperty('--heat');
+      heat.textContent = 'something on this wall is hot. go find it.';
+    });
     const hole = $('#hole');
     hole.addEventListener('click', openHole);
     hole.addEventListener('keydown', e => {
@@ -365,8 +358,11 @@
       });
     });
   </script>
+  <script src="utils/anim.js"></script>
+  <script src="utils/notbuilt.js"></script>
   <script src="js/sprites.js"></script>
   <script src="js/worlds.js"></script>
+  <script src="js/tunnel.js"></script>
   <script src="js/space.js"></script>
   <script src="js/portal.js"></script>
 </body>
