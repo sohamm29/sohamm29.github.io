@@ -15,8 +15,8 @@
    ============================================================ */
 const TUNNEL = (() => {
   const CFG = {
-    tunnelMs: 2200,     /* spin-up */
-    launchMs: 1300,     /* star burst */
+    tunnelMs: 2500,     /* spin-up */
+    launchMs: 3600,     /* star burst */
     fadeMs: 440,        /* fade-out — keep in step with #tunnel's css transition */
     rings: 16,
     segs: 12,           /* bricks per course */
@@ -25,7 +25,7 @@ const TUNNEL = (() => {
     /* dark depths -> base brick -> pothole daylight */
     shades: ['#140702', '#2a0e03', '#421604', '#5d2206', '#7a2e08',
              '#9c3c0a', '#c84c0c', '#e8804a', '#ffb066', '#ffe066'],
-    stars: 130,
+    stars: 240,
     starCols: ['#e8e8f0', '#ffe066', '#7fe3ff', '#8d8da8'],
   };
   const TAU = Math.PI * 2;
@@ -81,10 +81,14 @@ const TUNNEL = (() => {
         }
       }
 
-      /* stars for the burst out the far end */
+      /* stars for the hyperspace jump out the far end; each waits its
+         turn, sqrt skews the births late: a few lone streaks lead,
+         then the whole field piles in */
       const stars = Array.from({ length: cfg.stars }, () => ({
         a: Math.random() * Math.PI * 2,
         d: 2 + Math.random() * 26,
+        born: Math.sqrt(Math.random()) * 0.45,   /* fraction of launch when it joins */
+        dead: false,
         c: cfg.starCols[(Math.random() * cfg.starCols.length) | 0],
       }));
 
@@ -129,22 +133,32 @@ const TUNNEL = (() => {
             lastTone = 99;
             SFX.play('launch');
           }
-          if (p < 0.05) {                           /* the pop of release */
+          if (p < 0.02) {                           /* the pop of release */
             ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, W, H);
           }
-          const v = Math.pow(1.02 + p * 0.11, dt);
+          /* three acts: a few short slow streaks, full hyperspace,
+             then stars fly off for good and the field fades to none */
+          const surge = Math.min(1, p / 0.55);      /* speed ramps over the first half */
+          const v = Math.pow(1.004 + surge * surge * 0.13, dt);
+          const fading = p > 0.72;                  /* past here, no respawns */
+          if (p > 0.85) ctx.globalAlpha = Math.max(0, (1 - p) / 0.15);
           ctx.lineWidth = 1;
           for (const st of stars) {
+            if (st.dead || p < st.born) continue;
             const d0 = st.d;
             st.d *= v;
-            if (st.d > W + H) st.d = 2 + Math.random() * 10;
+            if (st.d > W + H) {
+              if (fading) { st.dead = true; continue; }
+              st.d = 2 + Math.random() * 10;
+            }
             ctx.strokeStyle = st.c;
             ctx.beginPath();
             ctx.moveTo(cx + Math.cos(st.a) * Math.min(d0, st.d), cy + Math.sin(st.a) * Math.min(d0, st.d));
             ctx.lineTo(cx + Math.cos(st.a) * st.d, cy + Math.sin(st.a) * st.d);
             ctx.stroke();
           }
+          ctx.globalAlpha = 1;
         } else {
           canvas.classList.add('fade');
           setTimeout(() => { canvas.classList.remove('on', 'fade'); resolve(); }, cfg.fadeMs);
