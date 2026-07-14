@@ -73,6 +73,36 @@
     #blob-eyes { opacity: 0; transition: opacity .15s steps(2); }
     #blob.awake #blob-eyes { opacity: 1; }
 
+    /* ---- the vortex: press the hole and the tunnel spins open ---- */
+    #vortex {
+      opacity: 0;
+      transform: scale(0);
+      transform-box: view-box;
+      transform-origin: 640px 400px;
+      transition: transform .35s steps(5), opacity .2s steps(2);
+    }
+    #vortex.on { opacity: 1; transform: scale(1); }
+    #vortex.on .v1 { animation: vswirl1 1.6s linear infinite; }
+    #vortex.on .v2 { animation: vswirl2 1.1s linear infinite; }
+    #vortex.on .v3 { animation: vswirl3 .7s linear infinite; }
+    @keyframes vswirl1 { to { stroke-dashoffset: -88; } }
+    @keyframes vswirl2 { to { stroke-dashoffset: 64; } }
+    @keyframes vswirl3 { to { stroke-dashoffset: -44; } }
+
+    /* ---- swirl sparkles: the blob's ride to the hole ---- */
+    #swirl {
+      opacity: 0;
+      transform-box: view-box;
+      transform-origin: 1027px 426px;
+      transition: opacity .2s steps(2);
+    }
+    #swirl.on { opacity: 1; }
+    #swirl .orbit { transform-box: view-box; transform-origin: 1027px 426px; }
+    #swirl.on .o1 { animation: orbspin 1.1s linear infinite; }
+    #swirl.on .o2 { animation: orbspin 1.5s linear infinite reverse; }
+    #swirl.on .o3 { animation: orbspin .8s linear infinite; }
+    @keyframes orbspin { to { transform: rotate(360deg); } }
+
     /* ---- text sits on the paint ---- */
     .page {
       position: relative;
@@ -123,6 +153,8 @@
     }
     @media (prefers-reduced-motion: reduce) {
       #heat.boom { animation: none; }
+      #vortex.on .v1, #vortex.on .v2, #vortex.on .v3,
+      #swirl.on .o1, #swirl.on .o2, #swirl.on .o3 { animation: none; }
     }
     footer {
       font-size: 8px;
@@ -228,6 +260,15 @@
       </g>
     </g>
 
+    <!-- the vortex: the tunnel mouth, hidden in the hole until pressed -->
+    <g id="vortex" aria-hidden="true">
+      <ellipse cx="640" cy="400" rx="64" ry="44" fill="#0a0618"/>
+      <ellipse class="v1" cx="640" cy="400" rx="54" ry="36" fill="none" stroke="#3d2a68" stroke-width="7" stroke-dasharray="26 18"/>
+      <ellipse class="v2" cx="640" cy="400" rx="38" ry="24" fill="none" stroke="#7fe3ff" stroke-width="5" stroke-dasharray="18 14"/>
+      <ellipse class="v3" cx="640" cy="400" rx="22" ry="13" fill="none" stroke="#b06cff" stroke-width="4" stroke-dasharray="12 10"/>
+      <ellipse cx="640" cy="400" rx="7" ry="4" fill="#ffe066"/>
+    </g>
+
     <!-- a blob, camouflaged in the paint. perched on a brick ledge. -->
     <g id="blob" aria-hidden="true">
       <path d="M1002 440 q-2 -30 25 -30 q27 0 25 30 q-2 4 -25 4 q-23 0 -25 -4 z"
@@ -236,6 +277,13 @@
         <rect x="1018" y="420" width="5" height="8"/>
         <rect x="1032" y="420" width="5" height="8"/>
       </g>
+    </g>
+
+    <!-- swirl sparkles: they wake with the blob and float it to the hole -->
+    <g id="swirl" aria-hidden="true">
+      <g class="orbit o1"><rect x="1054" y="418" width="6" height="6" fill="#7fe3ff"/></g>
+      <g class="orbit o2"><rect x="996" y="430" width="5" height="5" fill="#ffe066"/></g>
+      <g class="orbit o3"><rect x="1024" y="392" width="4" height="4" fill="#b06cff"/></g>
     </g>
 
     <!-- B.L.I.P. — waits under the wall until the blob needs a ride -->
@@ -310,8 +358,12 @@
       heat.style.removeProperty('--heat');
       heat.textContent = 'BOOM!';
       SFX.play('boom');
+      /* the press is what opens the tunnel: vortex spins up right away */
+      if (typeof PORTAL !== 'undefined' && PORTAL.launch && !reducedMotion) {
+        $('#vortex').classList.add('on');
+      }
       setTimeout(() => {
-        if (window.PORTAL && PORTAL.launch) { PORTAL.launch(); return; }
+        if (typeof PORTAL !== 'undefined' && PORTAL.launch) { PORTAL.launch(); return; }
         NOTBUILT.show('pipe');
       }, 650);
     }
@@ -319,6 +371,7 @@
     warp.addEventListener('close', () => {
       boomed = false;
       lastTier = -1;
+      $('#vortex').classList.remove('on');
       heat.classList.remove('boom');
       heat.style.removeProperty('--heat');
       heat.textContent = 'something on this wall is hot. go find it.';
