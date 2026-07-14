@@ -68,7 +68,40 @@
     #wall #hole, #wall #blob { pointer-events: auto; }
     #hole { cursor: pointer; outline: none; }
     #hole:focus-visible { filter: drop-shadow(0 0 5px #fff); }
-    #blob-eyes { opacity: 0; }
+    #blob path { transition: fill .5s steps(4), stroke .5s steps(4); }
+    #blob.awake path { fill: #62d96b; stroke: #2e7a3c; }
+    #blob-eyes { opacity: 0; transition: opacity .15s steps(2); }
+    #blob.awake #blob-eyes { opacity: 1; }
+
+    /* ---- the vortex: press the hole and the tunnel spins open ---- */
+    #vortex {
+      opacity: 0;
+      transform: scale(0);
+      transform-box: view-box;
+      transform-origin: 640px 400px;
+      transition: transform .35s steps(5), opacity .2s steps(2);
+    }
+    #vortex.on { opacity: 1; transform: scale(1); }
+    #vortex.on .v1 { animation: vswirl1 1.6s linear infinite; }
+    #vortex.on .v2 { animation: vswirl2 1.1s linear infinite; }
+    #vortex.on .v3 { animation: vswirl3 .7s linear infinite; }
+    @keyframes vswirl1 { to { stroke-dashoffset: -88; } }
+    @keyframes vswirl2 { to { stroke-dashoffset: 64; } }
+    @keyframes vswirl3 { to { stroke-dashoffset: -44; } }
+
+    /* ---- swirl sparkles: the blob's ride to the hole ---- */
+    #swirl {
+      opacity: 0;
+      transform-box: view-box;
+      transform-origin: 1027px 426px;
+      transition: opacity .2s steps(2);
+    }
+    #swirl.on { opacity: 1; }
+    #swirl .orbit { transform-box: view-box; transform-origin: 1027px 426px; }
+    #swirl.on .o1 { animation: orbspin 1.1s linear infinite; }
+    #swirl.on .o2 { animation: orbspin 1.5s linear infinite reverse; }
+    #swirl.on .o3 { animation: orbspin .8s linear infinite; }
+    @keyframes orbspin { to { transform: rotate(360deg); } }
 
     /* ---- text sits on the paint ---- */
     .page {
@@ -120,6 +153,8 @@
     }
     @media (prefers-reduced-motion: reduce) {
       #heat.boom { animation: none; }
+      #vortex.on .v1, #vortex.on .v2, #vortex.on .v3,
+      #swirl.on .o1, #swirl.on .o2, #swirl.on .o3 { animation: none; }
     }
     footer {
       font-size: 8px;
@@ -129,7 +164,7 @@
     footer a { color: inherit; }
     footer .links { margin-top: 4px; }
 
-    /* ---- hidden world dialog (the error, kept as-is) ---- */
+    /* ---- the not-built-yet dialog (copy lives in utils/notbuilt.js) ---- */
     dialog {
       font-family: inherit;
       background: var(--panel);
@@ -142,7 +177,7 @@
     }
     dialog::backdrop { background: rgba(0, 0, 0, .7); }
     dialog h2 { font-size: clamp(11px, 3vw, 15px); line-height: 1.8; margin: 0 0 20px; color: var(--accent); }
-    dialog p { font-size: clamp(9px, 2.4vw, 11px); line-height: 2.1; margin: 0 0 28px; }
+    dialog p { font-size: clamp(9px, 2.4vw, 11px); line-height: 2.1; margin: 0 0 28px; white-space: pre-line; }
     .btn {
       font-family: inherit;
       font-size: clamp(9px, 2.2vw, 12px);
@@ -225,6 +260,15 @@
       </g>
     </g>
 
+    <!-- the vortex: the tunnel mouth, hidden in the hole until pressed -->
+    <g id="vortex" aria-hidden="true">
+      <ellipse cx="640" cy="400" rx="64" ry="44" fill="#0a0618"/>
+      <ellipse class="v1" cx="640" cy="400" rx="54" ry="36" fill="none" stroke="#3d2a68" stroke-width="7" stroke-dasharray="26 18"/>
+      <ellipse class="v2" cx="640" cy="400" rx="38" ry="24" fill="none" stroke="#7fe3ff" stroke-width="5" stroke-dasharray="18 14"/>
+      <ellipse class="v3" cx="640" cy="400" rx="22" ry="13" fill="none" stroke="#b06cff" stroke-width="4" stroke-dasharray="12 10"/>
+      <ellipse cx="640" cy="400" rx="7" ry="4" fill="#ffe066"/>
+    </g>
+
     <!-- a blob, camouflaged in the paint. perched on a brick ledge. -->
     <g id="blob" aria-hidden="true">
       <path d="M1002 440 q-2 -30 25 -30 q27 0 25 30 q-2 4 -25 4 q-23 0 -25 -4 z"
@@ -233,6 +277,13 @@
         <rect x="1018" y="420" width="5" height="8"/>
         <rect x="1032" y="420" width="5" height="8"/>
       </g>
+    </g>
+
+    <!-- swirl sparkles: they wake with the blob and float it to the hole -->
+    <g id="swirl" aria-hidden="true">
+      <g class="orbit o1"><rect x="1054" y="418" width="6" height="6" fill="#7fe3ff"/></g>
+      <g class="orbit o2"><rect x="996" y="430" width="5" height="5" fill="#ffe066"/></g>
+      <g class="orbit o3"><rect x="1024" y="392" width="4" height="4" fill="#b06cff"/></g>
     </g>
 
     <!-- B.L.I.P. — waits under the wall until the blob needs a ride -->
@@ -283,6 +334,7 @@
       <div id="fpad-d" data-key="ArrowDown">&#9660;</div>
     </div>
   </div>
+  <canvas id="tunnel" aria-hidden="true"></canvas>
   <div id="shade" aria-hidden="true"></div>
 
   <dialog id="warp">
@@ -291,45 +343,39 @@
     <form method="dialog"><button class="btn">Exit pipe &#9654;</button></form>
   </dialog>
 
+  <script src="utils/dom.js"></script>
+  <script src="utils/sound.js"></script>
   <script>
-    const $ = (s, r = document) => r.querySelector(s);
-    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    /* tiny 8-bit sounds (no assets, just WebAudio) */
-    let ac;
-    function blip(notes) {
-      try {
-        ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-        const t0 = ac.currentTime;
-        notes.forEach(([freq, at, dur]) => {
-          const osc = ac.createOscillator(), gain = ac.createGain();
-          osc.type = 'square';
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.06, t0 + at);
-          gain.gain.exponentialRampToValueAtTime(0.001, t0 + at + dur);
-          osc.connect(gain).connect(ac.destination);
-          osc.start(t0 + at);
-          osc.stop(t0 + at + dur);
-        });
-      } catch (e) { /* silence is golden */ }
-    }
-
-    /* the hole: BOOM first, then launch if the probe is installed,
-       otherwise the old error */
+    /* the hole: BOOM first, then the blob's launch sequence if the
+       portal is installed, otherwise straight to the not-built error */
     const warp = $('#warp');
     const heat = $('#heat');
     let boomed = false;
     function openHole() {
+      if (boomed) return;
       boomed = true;
       heat.classList.add('boom');
       heat.style.removeProperty('--heat');
       heat.textContent = 'BOOM!';
-      blip([[98, 0, .3], [65.41, .08, .45], [49, .16, .6]]);
+      SFX.play('boom');
+      /* the press is what opens the tunnel: vortex spins up right away */
+      if (typeof PORTAL !== 'undefined' && PORTAL.launch && !reducedMotion) {
+        $('#vortex').classList.add('on');
+      }
       setTimeout(() => {
-        if (window.PORTAL && PORTAL.launch) { PORTAL.launch(); return; }
-        warp.showModal();
+        if (typeof PORTAL !== 'undefined' && PORTAL.launch) { PORTAL.launch(); return; }
+        NOTBUILT.show('pipe');
       }, 650);
     }
+    /* the dialog closed: put the wall back the way it was */
+    warp.addEventListener('close', () => {
+      boomed = false;
+      lastTier = -1;
+      $('#vortex').classList.remove('on');
+      heat.classList.remove('boom');
+      heat.style.removeProperty('--heat');
+      heat.textContent = 'something on this wall is hot. go find it.';
+    });
     const hole = $('#hole');
     hole.addEventListener('click', openHole);
     hole.addEventListener('keydown', e => {
@@ -365,8 +411,11 @@
       });
     });
   </script>
+  <script src="utils/anim.js"></script>
+  <script src="utils/notbuilt.js"></script>
   <script src="js/sprites.js"></script>
   <script src="js/worlds.js"></script>
+  <script src="js/tunnel.js"></script>
   <script src="js/space.js"></script>
   <script src="js/portal.js"></script>
 </body>

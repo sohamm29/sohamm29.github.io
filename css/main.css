@@ -6,6 +6,20 @@
 
 body.locked { overflow: hidden; }
 
+/* the tunnel: what the inside of the wall looks like at speed */
+#tunnel {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 28;
+  display: none;
+  background: #000;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transition: opacity .4s steps(4);
+}
+#tunnel.on { display: block; }
+#tunnel.fade { opacity: 0; }
+
 /* mid-launch curtain */
 #shade {
   position: fixed; inset: 0;

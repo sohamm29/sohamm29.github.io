@@ -5,9 +5,6 @@
    steer (navigation mode). Fly into a world to land on it.
    ============================================================ */
 const SPACE = (() => {
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const $ = (s, r = document) => r.querySelector(s);
-
   const overlay = $('#flight');
   const canvas = $('#flight-canvas');
   const ctx = canvas.getContext('2d');
@@ -165,7 +162,7 @@ const SPACE = (() => {
   /* ---------- drawing ---------- */
   function drawStars() {
     for (const st of stars) {
-      if (st.tw && !reduced && ((tick / st.tw) | 0) % 2) continue;
+      if (st.tw && !reducedMotion && ((tick / st.tw) | 0) % 2) continue;
       const sx = ((st.x - camX * st.d) % W + W) % W;
       ctx.fillStyle = st.c;
       ctx.fillRect(sx | 0, st.y | 0, st.s, st.s);
@@ -203,7 +200,7 @@ const SPACE = (() => {
   }
 
   function drawShip() {
-    const bob = (!reduced && mode === 'fly' && Math.abs(ship.vy) < 0.2)
+    const bob = (!reducedMotion && mode === 'fly' && Math.abs(ship.vy) < 0.2)
       ? Math.round(Math.sin(tick / 24) * 1.5) : 0;
     const sx = Math.round(ship.x - camX - 12), sy = Math.round(ship.y - 6 + bob);
     const flick = (tick & 2) ? '#ffe066' : '#ff8c42';
@@ -241,7 +238,7 @@ const SPACE = (() => {
   function landOn(w) {
     mode = 'landed';
     ship.vx = 0; ship.vy = 0;
-    if (window.blip) blip([[196, 0, .12], [155.56, .1, .2]]);
+    SFX.play('dock');
     landTitle.textContent = WORLDS.placeholder.title.replace('{name}', w.name);
     landText.textContent = WORLDS.placeholder.text;
     landBtn.textContent = WORLDS.placeholder.button;
@@ -256,7 +253,7 @@ const SPACE = (() => {
     if (w) { ship.x = w.x + w.px.r + 46; ship.y = w.y; }
     ship.vx = CRUISE; ship.vy = 0;
     mode = 'fly';
-    if (window.blip) blip([[523.25, 0, .1], [659.25, .1, .15]]);
+    SFX.play('resume');
   }
 
   /* ---------- messages ---------- */
@@ -281,9 +278,9 @@ const SPACE = (() => {
     if (document.fonts && document.fonts.load) document.fonts.load('8px "Press Start 2P"');
 
     ship.x = 60; ship.y = Math.round(H * 0.5);
-    ship.vx = reduced ? CRUISE : 4.2; ship.vy = 0;
+    ship.vx = reducedMotion ? CRUISE : 4.2; ship.vy = 0;
     intro = 0; camX = 0;
-    mode = reduced ? 'fly' : 'intro';
+    mode = reducedMotion ? 'fly' : 'intro';
 
     overlay.classList.add('on');
     document.body.classList.add('locked');

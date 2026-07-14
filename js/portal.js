@@ -1,93 +1,119 @@
 /* ============================================================
-   portal.js — the launch sequence. On dev the hole no longer
-   errors: the blob camouflaged in the paint wakes up, jumps
-   into B.L.I.P., the probe shrinks into the hole, and space
-   takes over. ESC in space hands control back here.
+   portal.js — the launch choreography. Click the hole and the
+   vortex spins open in it; the blob camouflaged in the paint
+   wakes up: eyes open, camouflage drops, two hops, then swirl
+   sparkles lift it and float it across the wall until the
+   vortex wins and it spirals down the drain.
+   Then the tunnel (js/tunnel.js) fires it out into the stars.
+
+   What's on the space side isn't defined yet, so the ride ends
+   at the NOTBUILT error (utils/notbuilt.js). When space is
+   real, swap that call for the space entry point.
    ============================================================ */
 const PORTAL = (() => {
-  const $ = (s, r = document) => r.querySelector(s);
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const blob = $('#blob');
+  const swirl = $('#swirl');
+  const vortex = $('#vortex');
+  const shade = $('#shade');
+  const tunnelCanvas = $('#tunnel');
 
-  const blob = $('#blob'), blobEyes = $('#blob-eyes');
-  const ship = $('#mini-ship'), shade = $('#shade');
-
+  const anim = ANIM.channel();
   let launching = false;
-  let anims = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
-  const play = (el, frames, opts) => {
-    const a = el.animate(frames, { fill: 'forwards', ...opts });
-    anims.push(a);
-    return a.finished.catch(() => {});
-  };
 
   async function launch() {
     if (launching) return;
     launching = true;
 
-    if (reduced) {
+    if (reducedMotion) {
       shade.classList.add('on');
       await wait(250);
-      SPACE.begin();
-      await wait(350);
       shade.classList.remove('on');
-      launching = false;
+      await NOTBUILT.show('space');
+      reset();
       return;
     }
 
-    /* 1 — the blob was in the paint all along */
-    blobEyes.style.opacity = 1;
-    if (window.blip) blip([[659.25, 0, .09], [987.77, .09, .12]]);
-    await play(blob, [
+    /* 1 — the tunnel is already spinning open (openHole lit the vortex);
+       the blob was in the paint all along: eyes open, camouflage drops */
+    vortex.classList.add('on');
+    blob.classList.add('awake');
+    SFX.play('wake');
+    await anim.play(blob, [
       { transform: 'scale(1, 1)' },
       { transform: 'scale(1.15, 0.8)', offset: 0.4 },
       { transform: 'scale(0.95, 1.1)', offset: 0.7 },
       { transform: 'scale(1, 1)' },
     ], { duration: 550, easing: 'ease-out' });
+    await wait(120);
 
-    /* 2 — B.L.I.P. rises into position below the ledge */
-    ship.style.opacity = 1;
-    await play(ship, [
-      { transform: 'translate(960px, 830px)' },
-      { transform: 'translate(960px, 500px)' },
-    ], { duration: 700, easing: 'cubic-bezier(.2,.8,.3,1)' });
-
-    /* 3 — the blob leaps into the dome */
-    if (window.blip) blip([[523.25, 0, .1], [783.99, .1, .14]]);
-    await play(blob, [
+    /* 2 — two hops off the ledge */
+    SFX.play('hop');
+    await anim.play(blob, [
       { transform: 'translate(0, 0) scale(1)' },
-      { transform: 'translate(-20px, -60px) scale(1.05)', offset: 0.35 },
-      { transform: 'translate(-50px, -45px) scale(1)', offset: 0.6 },
-      { transform: 'translate(-67px, 48px) scale(0.45)', offset: 0.9 },
-      { transform: 'translate(-67px, 60px) scale(0)' },
-    ], { duration: 850, easing: 'cubic-bezier(.4,0,.6,1)' });
+      { transform: 'translate(-38px, -58px) scale(1)', offset: 0.25 },
+      { transform: 'translate(-76px, -6px) scale(1.18, 0.82)', offset: 0.48 },
+      { transform: 'translate(-118px, -64px) scale(1)', offset: 0.75 },
+      { transform: 'translate(-158px, -10px) scale(1.18, 0.82)' },
+    ], { duration: 900, easing: 'cubic-bezier(.3,0,.7,1)' });
+
+    /* 3 — swirl sparkles spin up and float the blob to the hole,
+       bobbing on the way. the sparkles fly the same path. */
+    swirl.classList.add('on');
+    SFX.play('float');
+    anim.play(swirl, [
+      { transform: 'translate(-158px, -10px)' },
+      { transform: 'translate(-172px, -78px)', offset: 0.22 },
+      { transform: 'translate(-226px, -60px)', offset: 0.45 },
+      { transform: 'translate(-278px, -84px)', offset: 0.68 },
+      { transform: 'translate(-330px, -58px)', offset: 0.88 },
+      { transform: 'translate(-348px, -66px)' },
+    ], { duration: 1700, easing: 'ease-in-out' });
+    await anim.play(blob, [
+      { transform: 'translate(-158px, -10px) scale(1.18, 0.82) rotate(0deg)' },
+      { transform: 'translate(-172px, -78px) scale(0.94, 1.1) rotate(-6deg)', offset: 0.22 },
+      { transform: 'translate(-226px, -60px) scale(1) rotate(5deg)', offset: 0.45 },
+      { transform: 'translate(-278px, -84px) scale(1) rotate(-5deg)', offset: 0.68 },
+      { transform: 'translate(-330px, -58px) scale(1) rotate(4deg)', offset: 0.88 },
+      { transform: 'translate(-348px, -66px) scale(1) rotate(0deg)' },
+    ], { duration: 1700, easing: 'ease-in-out' });
+
+    /* 4 — the vortex wins: blob spirals down the drain, sparkles too */
+    SFX.play('suck');
+    anim.play(swirl, [
+      { transform: 'translate(-348px, -66px) scale(1)', opacity: 1 },
+      { transform: 'translate(-387px, -25px) scale(0)', opacity: 0 },
+    ], { duration: 700, easing: 'ease-in' });
+    await anim.play(blob, [
+      { transform: 'translate(-348px, -66px) scale(1) rotate(0deg)' },
+      { transform: 'translate(-361px, 8px) scale(0.85) rotate(120deg)', offset: 0.18 },
+      { transform: 'translate(-413px, -9px) scale(0.68) rotate(240deg)', offset: 0.36 },
+      { transform: 'translate(-395px, -42px) scale(0.5) rotate(360deg)', offset: 0.54 },
+      { transform: 'translate(-377px, -28px) scale(0.32) rotate(480deg)', offset: 0.72 },
+      { transform: 'translate(-386px, -21px) scale(0.16) rotate(580deg)', offset: 0.88 },
+      { transform: 'translate(-387px, -25px) scale(0) rotate(660deg)' },
+    ], { duration: 950, easing: 'ease-in' });
     blob.style.opacity = 0;
+    swirl.classList.remove('on');
 
-    /* 4 — pilot aboard: shrink into the hole */
-    await wait(180);
-    if (window.blip) blip([[392, 0, .12], [329.63, .12, .12], [261.63, .24, .2]]);
-    await play(ship, [
-      { transform: 'translate(960px, 500px) scale(1)' },
-      { transform: 'translate(700px, 430px) scale(0.7)', offset: 0.6 },
-      { transform: 'translate(640px, 400px) scale(0.02)' },
-    ], { duration: 1250, easing: 'cubic-bezier(.6,0,.9,.5)' });
-    ship.style.opacity = 0;
+    /* 5 — the ride: spin up, launch. the vortex hides behind the canvas. */
+    await wait(150);
+    const riding = TUNNEL.ride(tunnelCanvas);
+    vortex.classList.remove('on');
+    await riding;
 
-    /* 5 — through the wall */
-    shade.classList.add('on');
-    await wait(450);
-    SPACE.begin();
-    await wait(400);
-    shade.classList.remove('on');
-    launching = false;
+    /* 6 — space isn't built yet. the error says so. */
+    await NOTBUILT.show('space');
+    reset();
   }
 
-  /* back from space: put the wall back the way it was */
+  /* back on the wall: put everything the way it was */
   function reset() {
-    anims.forEach(a => a.cancel());
-    anims = [];
+    anim.cancelAll();
+    blob.classList.remove('awake');
     blob.style.opacity = '';
-    blobEyes.style.opacity = '';
-    ship.style.opacity = '';
+    swirl.classList.remove('on');
+    vortex.classList.remove('on');
+    tunnelCanvas.classList.remove('on', 'fade');
     shade.classList.remove('on');
     launching = false;
   }
