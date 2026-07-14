@@ -141,7 +141,14 @@ const TUNNEL = (() => {
              then stars fly off for good and the field fades to none */
           const surge = Math.min(1, p / 0.55);      /* speed ramps over the first half */
           const v = Math.pow(1.004 + surge * surge * 0.13, dt);
-          const fading = p > 0.72;                  /* past here, no respawns */
+          /* the jump: new lines spawn while the tails stretch back
+             to the core, then the full-length field holds pinned,
+             then everything flies off and snaps back to points */
+          const stretch =
+            p < 0.25 ? 1 + (p / 0.25) * 3 :
+            p < 0.6  ? 4 + Math.pow((p - 0.25) / 0.35, 2) * 56 :
+            p < 0.8  ? 60 :
+                       Math.max(1, 60 * (1 - (p - 0.8) / 0.1));
           if (p > 0.85) ctx.globalAlpha = Math.max(0, (1 - p) / 0.15);
           ctx.lineWidth = 1;
           for (const st of stars) {
@@ -149,12 +156,14 @@ const TUNNEL = (() => {
             const d0 = st.d;
             st.d *= v;
             if (st.d > W + H) {
-              if (fading) { st.dead = true; continue; }
-              st.d = 2 + Math.random() * 10;
+              if (p < 0.6) st.d = 2 + Math.random() * 10;      /* still filling the field */
+              else if (p < 0.8) st.d = W + H;                  /* pinned at full warp */
+              else if (st.d / stretch > W + H) { st.dead = true; continue; }
             }
+            const tail = Math.min(d0, st.d / stretch);
             ctx.strokeStyle = st.c;
             ctx.beginPath();
-            ctx.moveTo(cx + Math.cos(st.a) * Math.min(d0, st.d), cy + Math.sin(st.a) * Math.min(d0, st.d));
+            ctx.moveTo(cx + Math.cos(st.a) * tail, cy + Math.sin(st.a) * tail);
             ctx.lineTo(cx + Math.cos(st.a) * st.d, cy + Math.sin(st.a) * st.d);
             ctx.stroke();
           }
